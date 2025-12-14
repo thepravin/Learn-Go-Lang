@@ -47,7 +47,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// list
 	case tea.WindowSizeMsg:
 		h, v := docStyle.GetFrameSize()
-		m.list.SetSize(msg.Width-h, msg.Height-v)
+		m.list.SetSize(msg.Width-h, msg.Height-v-18)
 
 	// It is a key press?
 	case tea.KeyMsg:
@@ -56,7 +56,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 
 		// These keys should exit the program
-		case "ctrl+c", "q":
+		case "ctrl+c":
 			return m, tea.Quit
 		case "ctrl+n":
 			// fmt.Println("Key : ", msg)
