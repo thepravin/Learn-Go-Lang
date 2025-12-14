@@ -2,7 +2,10 @@ package models
 
 import (
 	"fmt"
+	"log"
+	"os"
 
+	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -10,7 +13,10 @@ import (
 
 type Model struct {
 	newFileInput             textinput.Model
+	notetextarea             textarea.Model
 	isCreateFileInputVisible bool
+	RootDir                  string
+	currentFile              *os.File // sotre the file pointer
 }
 
 func (m Model) Init() tea.Cmd {
@@ -36,12 +42,37 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// fmt.Println("Key : ", msg)
 			m.isCreateFileInputVisible = true
 			return m, nil
+		case "enter":
+			// todo : create file
+			fileName := m.newFileInput.Value()
+			if fileName != "" {
+				filePath := fmt.Sprintf("%s/%s.md", m.RootDir, fileName)
+
+				// check file already prsent or not
+				if _, err := os.Stat(filePath); err == nil {
+					// file exist
+					return m, nil
+				}
+
+				file, err := os.Create(filePath)
+				if err != nil {
+					log.Fatal("Error : %v", err)
+				}
+				m.currentFile = file
+				m.isCreateFileInputVisible = false
+				m.newFileInput.SetValue("")
+			}
+			return m, nil
 		}
 
 	}
 
 	if m.isCreateFileInputVisible {
 		m.newFileInput, cmd = m.newFileInput.Update(msg)
+	}
+
+	if m.currentFile != nil {
+		m.notetextarea, cmd = m.notetextarea.Update(msg)
 	}
 
 	return m, cmd
@@ -64,12 +95,19 @@ func (m Model) View() string {
 		view = m.newFileInput.View()
 	}
 
+	if m.currentFile != nil {
+		view = m.notetextarea.View()
+	}
+
 	return fmt.Sprintf("\n%s\n\n%s\n\n%s", welcome, view, help)
 }
 
-func NewMessage(initialMsg textinput.Model, isCreateFileInputVisible bool) Model {
+// helper function
+func ModelInitializationBridge(fileName textinput.Model, isCreateFileInputVisible bool, rootDir string, notesTextArea textarea.Model) Model {
 	return Model{
-		newFileInput:             initialMsg,
+		newFileInput:             fileName,
 		isCreateFileInputVisible: isCreateFileInputVisible,
+		RootDir:                  rootDir,
+		notetextarea:             notesTextArea,
 	}
 }
