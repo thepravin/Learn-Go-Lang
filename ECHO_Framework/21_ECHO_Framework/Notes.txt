@@ -1,0 +1,17 @@
+echo.New() => create a new echo instance, making a fresh web serve
+
+ehco.StartTLS(address, certFile, keyFile string) => 
+
+e.start(address string) => start http server at specifed port 
+
+e.Shutdown(ctx context.Context) => stops serve
+
+e.Any() => no matter what http method is used, this route will match. Useful when you want the same handler for all methods
+
+e.Group(prefix string) => groups multiple routes under a common prefix
+
+e.file(path, file string) => serves a single file
+
+c.Bind(&struct) => automatically bind json, xml or form data into struct 
+
+e.validate(&struct) => 

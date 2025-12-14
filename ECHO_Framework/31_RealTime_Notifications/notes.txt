@@ -1,0 +1,12 @@
+
+SSE (Server-Sent Events) :
+    - if only want to send notification then use SSE. because, notifications are 
+    one way communications.
+    - zero re-connection logic.
+    - server to client communication.
+    - If the connection drops, the browser automatically tries to reconnect.
+
+websockets :
+    - chat applications.
+    - websockets are bi-directional communications.
+    - You have to write code to handle reconnections.
