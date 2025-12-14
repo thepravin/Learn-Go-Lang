@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -50,7 +51,17 @@ func initializeModel() models.Model {
 	ta.ShowLineNumbers = false
 	ta.Focus()
 
-	return models.ModelInitializationBridge(ti, false, rootDir, ta)
+	// list
+	noteList := models.ListFiles(rootDir)
+
+	finalList := list.New(noteList, list.NewDefaultDelegate(), 0, 0)
+	finalList.Title = "All notes 📋"
+	finalList.Styles.Title = lipgloss.NewStyle().
+		Foreground(lipgloss.Color("16")).
+		Background(lipgloss.Color("254")).
+		Padding(0, 1)
+
+	return models.ModelInitializationBridge(ti, false, rootDir, ta, finalList)
 }
 
 func main() {

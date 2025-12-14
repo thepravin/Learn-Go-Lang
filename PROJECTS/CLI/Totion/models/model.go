@@ -5,10 +5,15 @@ import (
 	"log"
 	"os"
 
+	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+)
+
+var (
+	docStyle = lipgloss.NewStyle().Margin(1, 2)
 )
 
 type Model struct {
@@ -17,7 +22,17 @@ type Model struct {
 	isCreateFileInputVisible bool
 	RootDir                  string
 	currentFile              *os.File // sotre the file pointer
+	list                     list.Model
+	isListShowing            bool
 }
+
+type item struct {
+	title, desc string
+}
+
+func (i item) Title() string       { return i.title }
+func (i item) Description() string { return i.desc }
+func (i item) FilterValue() string { return i.title }
 
 func (m Model) Init() tea.Cmd {
 	return nil
@@ -28,6 +43,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
+
+	// list
+	case tea.WindowSizeMsg:
+		h, v := docStyle.GetFrameSize()
+		m.list.SetSize(msg.Width-h, msg.Height-v)
 
 	// It is a key press?
 	case tea.KeyMsg:
@@ -41,6 +61,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+n":
 			// fmt.Println("Key : ", msg)
 			m.isCreateFileInputVisible = true
+			return m, nil
+
+		case "ctrl+l":
+			m.isListShowing = true
 			return m, nil
 
 		case "ctrl+s", "esc":
@@ -114,6 +138,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.notetextarea, cmd = m.notetextarea.Update(msg)
 	}
 
+	if m.isListShowing {
+		m.list, cmd = m.list.Update(msg)
+	}
+
 	return m, cmd
 }
 
@@ -138,15 +166,48 @@ func (m Model) View() string {
 		view = m.notetextarea.View()
 	}
 
+	if m.isListShowing {
+		view = m.list.View()
+	}
+
 	return fmt.Sprintf("\n%s\n\n%s\n\n%s", welcome, view, help)
 }
 
 // helper function
-func ModelInitializationBridge(fileName textinput.Model, isCreateFileInputVisible bool, rootDir string, notesTextArea textarea.Model) Model {
+func ModelInitializationBridge(fileName textinput.Model, isCreateFileInputVisible bool, rootDir string, notesTextArea textarea.Model, finalList list.Model) Model {
 	return Model{
 		newFileInput:             fileName,
 		isCreateFileInputVisible: isCreateFileInputVisible,
 		RootDir:                  rootDir,
 		notetextarea:             notesTextArea,
+		list:                     finalList,
 	}
+}
+
+// ListFiles returns a list of files in the given directory
+func ListFiles(rootDir string) []list.Item {
+	items := make([]list.Item, 0)
+
+	entries, err := os.ReadDir(rootDir)
+	if err != nil {
+		log.Fatal("Error reading notes")
+	}
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			info, err := entry.Info()
+			if err != nil {
+				continue
+			}
+
+			modifiedTime := info.ModTime().Format("2006-01-02 15:04")
+
+			items = append(items, item{
+				title: entry.Name(),
+				desc:  fmt.Sprintf("Modified: %s", modifiedTime),
+			})
+		}
+	}
+
+	return items
 }
