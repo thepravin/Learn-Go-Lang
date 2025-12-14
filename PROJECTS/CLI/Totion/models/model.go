@@ -64,10 +64,28 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 
 		case "ctrl+l":
+			noteList := ListFiles(m.RootDir)
+			m.list.SetItems(noteList)
 			m.isListShowing = true
 			return m, nil
 
-		case "ctrl+s", "esc":
+		case "esc":
+			if m.isCreateFileInputVisible {
+				m.isCreateFileInputVisible = false
+			}
+			if m.currentFile != nil {
+				m.currentFile = nil
+			}
+			if m.isListShowing {
+				if m.list.FilterState() == list.Filtering {
+					break
+				}
+				m.isListShowing = false
+			}
+
+			return m, nil
+
+		case "ctrl+s":
 			// textarea value -> write it in that file and close it
 
 			if m.currentFile == nil { // If NO file is open, do nothing
@@ -104,6 +122,33 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			// if file is open
 			if m.currentFile != nil {
 				break
+			}
+
+			// if list open
+			if m.isListShowing {
+				item, ok := m.list.SelectedItem().(item)
+				if ok {
+					filePath := fmt.Sprintf("%s/%s", m.RootDir, item.title)
+
+					content, err := os.ReadFile(filePath)
+					if err != nil {
+						log.Printf("Error reading file : %v", err)
+						return m, nil
+					}
+					m.notetextarea.SetValue(string(content))
+
+					file, err := os.OpenFile(filePath, os.O_RDWR, 0644)
+					if err != nil {
+						log.Printf("Error reading file : %v", err)
+						return m, nil
+					}
+					m.currentFile = file // assign file pointer
+					m.isListShowing = false
+
+				}
+
+				return m, nil
+
 			}
 
 			// todo : create file
@@ -155,7 +200,7 @@ func (m Model) View() string {
 
 	welcome := style.Render("WELCOME TO TOTION 📝")
 
-	help := "Ctrl+N: new file | Ctrl+L: list | Ctrl+S: save | Esc: back/save | Ctrl+Q: quit"
+	help := "Ctrl+N: new file | Ctrl+L: list | Ctrl+S: save | Esc: back | Ctrl+Q: quit"
 
 	view := ""
 	if m.isCreateFileInputVisible {
