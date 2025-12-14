@@ -74,6 +74,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.isCreateFileInputVisible = false
 			}
 			if m.currentFile != nil {
+				m.notetextarea.SetValue("")
 				m.currentFile = nil
 			}
 			if m.isListShowing {
