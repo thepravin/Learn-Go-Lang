@@ -11,6 +11,22 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+
+	// It is a key press?
+	case tea.KeyMsg:
+
+		// what was the actual key press
+		switch msg.String() {
+
+		// These keys should exit the program
+		case "ctrl+c", "q":
+			return m, tea.Quit
+
+		}
+
+	}
+
 	return m, nil
 }
 
