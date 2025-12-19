@@ -3,6 +3,7 @@ package services
 import (
 	"errors"
 	"ginLearning/05_Auth/models"
+	"ginLearning/05_Auth/utils"
 
 	"gorm.io/gorm"
 )
@@ -28,8 +29,12 @@ func (a *AuthService) LoginService(email *string, password *string) (*models.Use
 
 	var user models.User
 
-	if err := a.db.Where("email = ?", *email).Where("password= ?", *password).First(&user).Error; err != nil {
+	if err := a.db.Where("email = ?", *email).First(&user).Error; err != nil {
 		return nil, err
+	}
+
+	if !utils.CheckPasswordHash(*password, user.Password) {
+		return nil, errors.New("Invalid credentials")
 	}
 
 	return &user, nil
@@ -46,11 +51,16 @@ func (a *AuthService) RegisterService(email *string, password *string, name *str
 		return nil, errors.New("Name can't be null")
 	}
 
+	hashedPassword, err := utils.HashPassword(*password)
+	if err != nil {
+		return nil, err
+	}
+
 	var user models.User
 
 	user.Name = *name
 	user.Email = *email
-	user.Password = *password
+	user.Password = hashedPassword
 
 	if err := a.db.Create(&user).Error; err != nil {
 		return nil, err
