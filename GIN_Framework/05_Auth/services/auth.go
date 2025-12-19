@@ -1,0 +1,60 @@
+package services
+
+import (
+	"errors"
+	"ginLearning/05_Auth/models"
+
+	"gorm.io/gorm"
+)
+
+type AuthService struct {
+	db *gorm.DB
+}
+
+func InitAuthService(db *gorm.DB) *AuthService {
+	db.AutoMigrate(&models.User{})
+	return &AuthService{
+		db: db,
+	}
+}
+
+func (a *AuthService) LoginService(email *string, password *string) (*models.Login, error) {
+	if email == nil {
+		return nil, errors.New("Email can't be null")
+	}
+	if password == nil {
+		return nil, errors.New("Password can't be null")
+	}
+
+	var user models.Login
+
+	if err := a.db.Where("email = ?", *email).Where("password= ?", *password).First(&user).Error; err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (a *AuthService) RegisterService(email *string, password *string, name *string) (*models.User, error) {
+	if email == nil {
+		return nil, errors.New("Email can't be null")
+	}
+	if password == nil {
+		return nil, errors.New("Password can't be null")
+	}
+	if name == nil {
+		return nil, errors.New("Name can't be null")
+	}
+
+	var user models.User
+
+	user.Name = *name
+	user.Email = *email
+	user.Password = *password
+
+	if err := a.db.Create(&user).Error; err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}

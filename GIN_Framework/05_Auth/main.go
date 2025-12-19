@@ -3,6 +3,7 @@ package main
 import (
 	"ginLearning/05_Auth/controllers"
 	"ginLearning/05_Auth/db"
+	"ginLearning/05_Auth/services"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +17,8 @@ func main() {
 		log.Fatal("DB not connected.....")
 	}
 
-	authController := controllers.InitAuthController()
+	authService := services.InitAuthService(db)
+	authController := controllers.InitAuthController(authService)
 	authController.InitAuthControllerRoutes(router)
 
 	router.Run(":7757")
