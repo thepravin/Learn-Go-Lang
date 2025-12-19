@@ -26,8 +26,23 @@ func (a *AuthController) InitAuthControllerRoutes(router *gin.Engine) {
 
 func (a *AuthController) Login() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		var loginBoday models.Login
+		if err := c.BindJSON(&loginBoday); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": err.Error(),
+			})
+			return
+		}
+		user, err := a.authService.LoginService(&loginBoday.Email, &loginBoday.Password)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": err.Error(),
+			})
+			return
+		}
 		c.JSON(http.StatusOK, gin.H{
-			"message": "Login....",
+			"message": "User logged in successfully",
+			"user":    user,
 		})
 	}
 }

@@ -18,7 +18,7 @@ func InitAuthService(db *gorm.DB) *AuthService {
 	}
 }
 
-func (a *AuthService) LoginService(email *string, password *string) (*models.Login, error) {
+func (a *AuthService) LoginService(email *string, password *string) (*models.User, error) {
 	if email == nil {
 		return nil, errors.New("Email can't be null")
 	}
@@ -26,7 +26,7 @@ func (a *AuthService) LoginService(email *string, password *string) (*models.Log
 		return nil, errors.New("Password can't be null")
 	}
 
-	var user models.Login
+	var user models.User
 
 	if err := a.db.Where("email = ?", *email).Where("password= ?", *password).First(&user).Error; err != nil {
 		return nil, err
