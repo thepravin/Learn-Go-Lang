@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -16,4 +18,20 @@ func GenerateToken(email string, id int) (string, error) {
 	})
 
 	return token.SignedString([]byte(secretKey))
+}
+
+func ParseToken(jwtToken string) (*jwt.Token, error) {
+	token, err := jwt.Parse(jwtToken, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
+		}
+		return []byte(secretKey), nil
+	})
+
+	if err != nil {
+		return nil, errors.New("bad jwt token")
+	}
+
+	return token, nil
+
 }

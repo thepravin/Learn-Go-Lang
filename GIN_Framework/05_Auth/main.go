@@ -21,5 +21,12 @@ func main() {
 	authController := controllers.InitAuthController(authService)
 	authController.InitAuthControllerRoutes(router)
 
+	notesService := &services.NotesService{}
+	notesService.InitService(db)
+
+	notesController := &controllers.NotesController{}
+	notesController.Init(notesService)
+	notesController.InitNotesControllerRoutes(router)
+
 	router.Run(":7757")
 }
