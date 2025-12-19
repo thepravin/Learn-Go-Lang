@@ -1,9 +1,10 @@
 package models
 
 type User struct {
-	Name     string `json:"name" binding:"required"`
-	Email    string `json:"email" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	ID       uint   `json:"id" gorm:"primaryKey"`
+	Name     string `json:"name" binding:"required" gorm:"not null"`
+	Email    string `json:"email" binding:"required" gorm:"uniqueIndex;not null"`
+	Password string `json:"password" binding:"required" gorm:"not null"`
 }
 
 type Login struct {
