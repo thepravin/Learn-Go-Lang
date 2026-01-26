@@ -1,6 +1,10 @@
 /**
 - length of array declared and fixed at the time of decleration.
--
+- when you declare an array or a slice, the elements are initialized to their  default value.
+	int,float = 0
+	string 	  = ""
+	boolean   = false
+	pointers  = nil
 */
 
 package main
@@ -19,7 +23,6 @@ func main() {
 
 	//--------------------------------------------------------------------
 
-	// This is the corrected line:
 	fruits := [5]string{"apple", "orange"}
 
 	fmt.Printf("Array: %q\n", fruits) // Will print: ["apple" "orange" "" ""  ""] (note the 3 empty spots)
