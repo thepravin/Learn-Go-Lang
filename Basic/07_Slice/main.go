@@ -1,7 +1,9 @@
 /*
 	- fixed and dynamic data structure
 	- length can be changed during program's execution
-	-
+	- Slices hold references to an underlying array, and if you assign one slice to another, both refer to the same array.
+
+	- https://golangforall.com/en/post/golang-slice.html
 */
 
 package main
