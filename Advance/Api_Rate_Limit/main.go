@@ -23,17 +23,16 @@ type UserApiRate struct {
 }
 
 type RateLimit struct {
-	Key         string `gorm:"primaryKey;size:255"` // Column is named 'key'
+	Key         string `gorm:"primaryKey;size:255"`
 	Count       int
 	WindowStart time.Time `gorm:"index"`
 	CreatedAT   time.Time // Must be initialized to avoid '0000-00-00' error
-	UpdateAt    time.Time // Must be initialized/updated
+	UpdateAt    time.Time
 }
 
 var db *gorm.DB
 
 func initDB() {
-	// Ensure your DSN is correct and the database service is running
 	dsn := "app_user:app_pass@tcp(127.0.0.1:3606)/demo?parseTime=true"
 
 	database, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -101,8 +100,8 @@ func RateLimiter(limit int, window time.Duration, exceedStatus int) echo.Middlew
 					Key:         key,
 					Count:       1,
 					WindowStart: now,
-					CreatedAT:   now, // FIX: Initialize to current time
-					UpdateAt:    now, // FIX: Initialize to current time
+					CreatedAT:   now,
+					UpdateAt:    now,
 				}
 				db.Save(&rl)
 				return next(c)
@@ -121,7 +120,7 @@ func RateLimiter(limit int, window time.Duration, exceedStatus int) echo.Middlew
 
 			// Increment count and save
 			rl.Count++
-			rl.UpdateAt = now // FIX: Update the UpdateAt timestamp
+			rl.UpdateAt = now
 			db.Save(&rl)
 			return next(c)
 		}
